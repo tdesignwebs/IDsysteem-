@@ -64,10 +64,10 @@
 
     function login() {
         const code = document.getElementById('userCode').value;
-        const user = users[deviceId];
+        const user = users[deviceId];  // Check using the device ID
 
-        if (!user) {
-            document.getElementById('loginStatus').textContent = 'User not registered.';
+        if (!user || user.code !== code) {
+            document.getElementById('loginStatus').textContent = 'User not registered or code incorrect.';
             return;
         }
 
@@ -82,14 +82,11 @@
             return;
         }
 
-        if (code === user.code) {
-            document.getElementById('loginStatus').textContent = 'Login successful! Redirecting...';
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1000);
-        } else {
-            document.getElementById('loginStatus').textContent = 'Invalid code.';
-        }
+        // Successfully logged in
+        document.getElementById('loginStatus').textContent = 'Login successful! Redirecting...';
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1000);
     }
 </script>
 
