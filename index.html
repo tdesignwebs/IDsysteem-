@@ -28,6 +28,14 @@
             padding: 10px;
             border: 1px solid #3498db;
         }
+        .user-list {
+            margin-top: 20px;
+        }
+        .user-item {
+            padding: 5px;
+            border: 1px solid #3498db;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -40,11 +48,16 @@
     <button onclick="login()">Login</button>
 
     <div id="loginStatus" class="info"></div>
+
+    <div class="user-list" id="userList">
+        <h3>Available Users</h3>
+        <div id="userListContent"></div>
+    </div>
 </div>
 
 <script>
     let deviceId = localStorage.getItem('deviceId');
-    
+
     // Function to generate a unique ID
     function generateUniqueId() {
         return 'device-' + Math.random().toString(36).substr(2, 9);
@@ -64,21 +77,10 @@
 
     function login() {
         const code = document.getElementById('userCode').value;
-        const user = users[deviceId];  // Check using the device ID
+        const user = users[deviceId]; // Check using the device ID
 
         if (!user || user.code !== code) {
             document.getElementById('loginStatus').textContent = 'User not registered or code incorrect.';
-            return;
-        }
-
-        if (user.banned) {
-            document.getElementById('loginStatus').textContent = 'Your account is banned.';
-            return;
-        }
-
-        if (user.locked && Date.now() < user.lockUntil) {
-            const timeRemaining = Math.ceil((user.lockUntil - Date.now()) / 1000);
-            document.getElementById('loginStatus').textContent = `Your account is locked for another ${timeRemaining} seconds.`;
             return;
         }
 
@@ -88,6 +90,22 @@
             window.location.href = 'dashboard.html';
         }, 1000);
     }
+
+    function populateUserList() {
+        const userListContent = document.getElementById('userListContent');
+        userListContent.innerHTML = '';
+
+        for (const deviceId in users) {
+            const user = users[deviceId];
+            const userDiv = document.createElement('div');
+            userDiv.classList.add('user-item');
+            userDiv.textContent = `Device ID: ${deviceId}, Code: ${user.code}, Status: ${user.banned ? 'Banned' : 'Active'}`;
+            userListContent.appendChild(userDiv);
+        }
+    }
+
+    // Populate user list on page load
+    window.onload = populateUserList;
 </script>
 
 </body>
