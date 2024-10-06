@@ -57,9 +57,8 @@
     document.getElementById('deviceIdDisplay').textContent = deviceId;
 
     function logout() {
-        // Clear device ID and redirect to login page
-        localStorage.removeItem('deviceId');
-        window.location.href = 'user.html';
+        // Redirect to login page without removing device ID
+        window.location.href = 'index.html';
     }
 </script>
 
