@@ -7,40 +7,60 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #2c3e50;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            background-color: #f4f4f4;
+            padding: 20px;
         }
         .container {
-            background-color: #34495e;
-            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
         h1 {
-            font-size: 2.5rem;
+            color: #3498db;
         }
-        p {
-            font-size: 1.2rem;
+        .info {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border: 1px solid #3498db;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Welcome to Your Dashboard</h1>
-    <p>Your Device ID is: <span id="deviceIdDisplay"></span></p>
+    <h1>Welcome to Your Dashboard!</h1>
+    <div class="info">
+        Your Device ID: <span id="deviceIdDisplay"></span>
+    </div>
+    <button onclick="logout()">Logout</button>
 </div>
 
 <script>
-    // Fetch the device ID from localStorage and display it on the dashboard
-    const deviceId = localStorage.getItem('deviceId');
+    let deviceId = localStorage.getItem('deviceId');
+
+    // Display the device ID
     document.getElementById('deviceIdDisplay').textContent = deviceId;
+
+    function logout() {
+        // Clear device ID and redirect to login page
+        localStorage.removeItem('deviceId');
+        window.location.href = 'user.html';
+    }
 </script>
 
 </body>
