@@ -147,30 +147,26 @@
     function toggleBan(deviceId) {
         users[deviceId].banned = !users[deviceId].banned;
         localStorage.setItem('users', JSON.stringify(users));
-        populateUserTable();  // Refresh the table
-        alert(`Device ID: ${deviceId} ${users[deviceId].banned ? 'banned' : 'unbanned'}.`);
+        populateUserTable();
+        alert(`${users[deviceId].banned ? 'Banned' : 'Unbanned'} Device ID: ${deviceId}.`);
     }
 
     function lockUser(deviceId) {
-        const lockDuration = prompt('Enter lock duration in seconds:', '60'); // Lock for 60 seconds as an example
-        if (lockDuration && !isNaN(lockDuration)) {
-            users[deviceId].locked = true;
-            users[deviceId].lockUntil = Date.now() + parseInt(lockDuration) * 1000;  // Set lock until timestamp
-            localStorage.setItem('users', JSON.stringify(users));
-            populateUserTable();  // Refresh the table
-            alert(`Device ID: ${deviceId} locked for ${lockDuration} seconds.`);
-        } else {
-            alert('Please enter a valid number.');
-        }
+        users[deviceId].locked = true;
+        users[deviceId].lockUntil = Date.now() + 60000; // Lock for 60 seconds
+        localStorage.setItem('users', JSON.stringify(users));
+        populateUserTable();
+        alert(`Locked Device ID: ${deviceId} for 60 seconds.`);
     }
 
     function deleteUser(deviceId) {
         delete users[deviceId];
         localStorage.setItem('users', JSON.stringify(users));
-        populateUserTable();  // Refresh the table
-        alert(`User ID: ${deviceId} deleted.`);
+        populateUserTable();
+        alert(`Deleted Device ID: ${deviceId}.`);
     }
 
+    // Populate user table on page load
     window.onload = populateUserTable;
 </script>
 
