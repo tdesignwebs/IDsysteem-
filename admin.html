@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>Admin Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,43 +11,30 @@
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        input, button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+        }
         table {
             width: 100%;
+            margin-top: 20px;
             border-collapse: collapse;
         }
-        table, th, td {
-            border: 1px solid black;
+        th, td {
             padding: 10px;
-            text-align: center;
+            border: 1px solid #ddd;
+            text-align: left;
         }
-        input, button {
-            margin: 5px;
-            padding: 10px;
-        }
-        .action-btn {
+        th {
             background-color: #3498db;
             color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            padding: 5px 10px;
-        }
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-            padding: 5px 10px;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.3s;
-        }
-        .delete-btn:hover, .action-btn:hover {
-            opacity: 0.8;
         }
     </style>
 </head>
@@ -55,104 +42,72 @@
 
 <div class="container">
     <h1>Admin Panel</h1>
+    <input type="text" id="deviceId" placeholder="Enter Device ID">
+    <input type="text" id="userCode" placeholder="Enter User Code">
+    <button onclick="addUser()">Add User</button>
 
-    <!-- Section for Adding a New User Code -->
-    <h2>Add New User Code</h2>
-    <input type="text" id="newUserCode" placeholder="Enter new User Code">
-    <input type="text" id="associatedDeviceId" placeholder="Enter Device ID">
-    <button class="action-btn" onclick="addNewUser()">Add User Code</button>
-
-    <hr>
-
-    <h2>Manage Users</h2>
-    <table>
+    <table id="userTable">
         <thead>
             <tr>
                 <th>Device ID</th>
                 <th>User Code</th>
-                <th>Ban Status</th>
-                <th>Lock Status</th>
-                <th>Actions</th>
+                <th>Status</th>
+                <th>Action</th>
             </tr>
         </thead>
-        <tbody id="userTable">
-            <!-- User data will be populated here -->
-        </tbody>
+        <tbody id="userTableBody"></tbody>
     </table>
 </div>
 
 <script>
     let users = JSON.parse(localStorage.getItem('users')) || {};
 
+    function addUser() {
+        const deviceId = document.getElementById('deviceId').value.trim();
+        const userCode = document.getElementById('userCode').value.trim();
+
+        if (!deviceId || !userCode) {
+            alert("Please enter both Device ID and User Code.");
+            return;
+        }
+
+        // Check if the user already exists
+        if (users[deviceId]) {
+            alert("User already exists.");
+            return;
+        }
+
+        // Add user to the users object
+        users[deviceId] = { code: userCode, banned: false, locked: false, lockUntil: null };
+        localStorage.setItem('users', JSON.stringify(users));
+        populateUserTable();
+        alert(`User added with Device ID: ${deviceId} and Code: ${userCode}`);
+    }
+
     function populateUserTable() {
-        const userTable = document.getElementById('userTable');
-        userTable.innerHTML = '';  // Clear existing rows
+        const userTableBody = document.getElementById('userTableBody');
+        userTableBody.innerHTML = '';
 
-        Object.keys(users).forEach(deviceId => {
+        for (const deviceId in users) {
             const user = users[deviceId];
-            const lockStatus = user.locked ? `Locked until ${new Date(user.lockUntil).toLocaleString()}` : 'Unlocked';
-            const banStatus = user.banned ? 'Banned' : 'Active';
-
             const row = document.createElement('tr');
-
             row.innerHTML = `
                 <td>${deviceId}</td>
                 <td>${user.code}</td>
-                <td>${banStatus}</td>
-                <td>${lockStatus}</td>
+                <td>${user.banned ? 'Banned' : 'Active'}</td>
                 <td>
-                    <button class="action-btn" onclick="toggleBan('${deviceId}')">${user.banned ? 'Unban' : 'Ban'}</button>
-                    <button class="action-btn" onclick="lockUser('${deviceId}')">Lock</button>
-                    <button class="delete-btn" onclick="deleteUser('${deviceId}')">Delete</button>
+                    <button onclick="deleteUser('${deviceId}')">Delete</button>
                 </td>
             `;
-            userTable.appendChild(row);
-        });
-    }
-
-    function addNewUser() {
-        const newUserCode = document.getElementById('newUserCode').value.trim();
-        const deviceId = document.getElementById('associatedDeviceId').value.trim();
-
-        if (!newUserCode || !deviceId) {
-            alert('Please enter a valid User Code and Device ID.');
-            return;
+            userTableBody.appendChild(row);
         }
-
-        // Check if deviceId already has a user
-        if (users[deviceId]) {
-            alert('This Device ID already has a User Code associated with it.');
-            return;
-        }
-
-        users[deviceId] = { code: newUserCode, banned: false, locked: false, lockUntil: 0 };
-        localStorage.setItem('users', JSON.stringify(users));
-        populateUserTable();
-        document.getElementById('newUserCode').value = '';  // Clear input field
-        document.getElementById('associatedDeviceId').value = '';  // Clear input field
-        alert(`User Code: ${newUserCode} added for Device ID: ${deviceId}.`);
-    }
-
-    function toggleBan(deviceId) {
-        users[deviceId].banned = !users[deviceId].banned;
-        localStorage.setItem('users', JSON.stringify(users));
-        populateUserTable();
-        alert(`${users[deviceId].banned ? 'Banned' : 'Unbanned'} User Code for Device ID: ${deviceId}.`);
-    }
-
-    function lockUser(deviceId) {
-        users[deviceId].locked = true;
-        users[deviceId].lockUntil = Date.now() + 60 * 1000;  // Lock for 60 seconds
-        localStorage.setItem('users', JSON.stringify(users));
-        populateUserTable();
-        alert(`Locked User Code for Device ID: ${deviceId} for 60 seconds.`);
     }
 
     function deleteUser(deviceId) {
         delete users[deviceId];
         localStorage.setItem('users', JSON.stringify(users));
         populateUserTable();
-        alert(`Deleted User Code for Device ID: ${deviceId}.`);
+        alert(`Deleted User with Device ID: ${deviceId}.`);
     }
 
     // Populate user table on page load
