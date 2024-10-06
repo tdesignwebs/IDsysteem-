@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+        }
+        .info {
+            margin-top: 20px;
+            background-color: #e7f3ff;
+            padding: 10px;
+            border: 1px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Login</h1>
+    <p>Your Device ID: <span id="deviceIdDisplay"></span></p>
+
+    <input type="text" id="userCode" placeholder="Enter your code">
+    <button onclick="login()">Login</button>
+
+    <div id="loginStatus" class="info"></div>
+</div>
+
+<script>
+    let deviceId = localStorage.getItem('deviceId');
+    
+    // Function to generate a unique ID
+    function generateUniqueId() {
+        return 'AlsanaAlgo' + Math.random().toString(36).substr(2, 19);
+    }
+
+    // If no device ID exists, generate one and store it
+    if (!deviceId) {
+        deviceId = generateUniqueId();
+        localStorage.setItem('deviceId', deviceId);
+    }
+
+    // Display the device ID
+    document.getElementById('deviceIdDisplay').textContent = deviceId;
+
+    // Load users from localStorage (simulate database)
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+
+    function login() {
+        const code = document.getElementById('userCode').value;
+        const user = users[deviceId];
+
+        if (!user) {
+            document.getElementById('loginStatus').textContent = 'User not registered.';
+            return;
+        }
+
+        if (user.banned) {
+            document.getElementById('loginStatus').textContent = 'Your account is banned.';
+            return;
+        }
+
+        if (user.locked && Date.now() < user.lockUntil) {
+            const timeRemaining = Math.ceil((user.lockUntil - Date.now()) / 1000);
+            document.getElementById('loginStatus').textContent = `Your account is locked for another ${timeRemaining} seconds.`;
+            return;
+        }
+
+        if (code === user.code) {
+            document.getElementById('loginStatus').textContent = 'Login successful! Redirecting...';
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        } else {
+            document.getElementById('loginStatus').textContent = 'Invalid code.';
+        }
+    }
+</script>
+
+</body>
+</html>

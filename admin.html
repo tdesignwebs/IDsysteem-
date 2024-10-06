@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+        input, button {
+            margin: 5px;
+            padding: 10px;
+        }
+        .action-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            padding: 5px 10px;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        .delete-btn:hover, .action-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Admin Panel</h1>
+
+    <!-- Section for Adding a New Device ID -->
+    <h2>Add New Device ID</h2>
+    <input type="text" id="newDeviceId" placeholder="Enter new Device ID">
+    <button class="action-btn" onclick="addNewUser()">Add Device</button>
+
+    <hr>
+
+    <h2>Manage Users</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Device ID</th>
+                <th>User Code</th>
+                <th>Ban Status</th>
+                <th>Lock Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="userTable">
+            <!-- User data will be populated here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    let users = JSON.parse(localStorage.getItem('users')) || {};
+
+    function populateUserTable() {
+        const userTable = document.getElementById('userTable');
+        userTable.innerHTML = '';  // Clear existing rows
+
+        Object.keys(users).forEach(deviceId => {
+            const user = users[deviceId];
+            const lockStatus = user.locked ? `Locked until ${new Date(user.lockUntil).toLocaleString()}` : 'Unlocked';
+            const banStatus = user.banned ? 'Banned' : 'Active';
+
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${deviceId}</td>
+                <td>
+                    <input type="text" id="code-${deviceId}" value="${user.code || ''}" placeholder="Enter new code">
+                </td>
+                <td>${banStatus}</td>
+                <td>${lockStatus}</td>
+                <td>
+                    <button class="action-btn" onclick="updateUserCode('${deviceId}')">Save Code</button>
+                    <button class="action-btn" onclick="toggleBan('${deviceId}')">${user.banned ? 'Unban' : 'Ban'}</button>
+                    <button class="action-btn" onclick="lockUser('${deviceId}')">Lock</button>
+                    <button class="delete-btn" onclick="deleteUser('${deviceId}')">Delete</button>
+                </td>
+            `;
+            userTable.appendChild(row);
+        });
+    }
+
+    function addNewUser() {
+        const newDeviceId = document.getElementById('newDeviceId').value.trim();
+
+        if (!newDeviceId) {
+            alert('Please enter a valid Device ID.');
+            return;
+        }
+
+        if (users[newDeviceId]) {
+            alert('This Device ID already exists.');
+            return;
+        }
+
+        users[newDeviceId] = { code: '', banned: false, locked: false, lockUntil: 0 };
+        localStorage.setItem('users', JSON.stringify(users));
+        populateUserTable();
+        document.getElementById('newDeviceId').value = '';  // Clear input field
+        alert(`Device ID: ${newDeviceId} added.`);
+    }
+
+    function updateUserCode(deviceId) {
+        const newCode = document.getElementById(`code-${deviceId}`).value;
+
+        if (newCode) {
+            users[deviceId].code = newCode;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert(`Code for Device ID: ${deviceId} updated.`);
+        } else {
+            alert('Please enter a valid code.');
+        }
+    }
+
+    function toggleBan(deviceId) {
+        users[deviceId].banned = !users[deviceId].banned;
+        localStorage.setItem('users', JSON.stringify(users));
+        populateUserTable();  // Refresh the table
+        alert(`Device ID: ${deviceId} ${users[deviceId].banned ? 'banned' : 'unbanned'}.`);
+    }
+
+    function lockUser(deviceId) {
+        const lockDuration = prompt('Enter lock duration in seconds:', '60'); // Lock for 60 seconds as an example
+        if (lockDuration && !isNaN(lockDuration)) {
+            users[deviceId].locked = true;
+            users[deviceId].lockUntil = Date.now() + parseInt(lockDuration) * 1000;  // Set lock until timestamp
+            localStorage.setItem('users', JSON.stringify(users));
+            populateUserTable();  // Refresh the table
+            alert(`Device ID: ${deviceId} locked for ${lockDuration} seconds.`);
+        } else {
+            alert('Please enter a valid number.');
+        }
+    }
+
+    function deleteUser(deviceId) {
+        delete users[deviceId];
+        localStorage.setItem('users', JSON.stringify(users));
+        populateUserTable();  // Refresh the table
+        alert(`User ID: ${deviceId} deleted.`);
+    }
+
+    window.onload = populateUserTable;
+</script>
+
+</body>
+</html>
